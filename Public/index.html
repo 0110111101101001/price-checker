@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cadastro de Token e Produto</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      padding: 30px;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    .form-box {
+      background: white;
+      padding: 20px;
+      margin-bottom: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background-color: #28a745;
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    #resposta-token,
+    #resposta-produto {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-box">
+    <h2>🔐 Cadastrar Push Token</h2>
+    <form id="token-form">
+      <label>UID:</label>
+      <input type="text" id="uid-token" required />
+
+      <label>Push Token:</label>
+      <input type="text" id="pushToken" required />
+
+      <button type="submit">Cadastrar Token</button>
+    </form>
+    <p id="resposta-token"></p>
+  </div>
+
+  <div class="form-box">
+    <h2>📦 Cadastrar Produto</h2>
+    <form id="produto-form">
+      <label>Nome do Produto:</label>
+      <input type="text" id="nome" required />
+
+      <label>Preço desejado (R$):</label>
+      <input type="number" id="preco" required step="0.01" />
+
+      <label>UID do usuário:</label>
+      <input type="text" id="uid-produto" required />
+
+      <button type="submit">Cadastrar Produto</button>
+    </form>
+    <p id="resposta-produto"></p>
+  </div>
+
+  <script>
+    // Formulário de Token
+    const tokenForm = document.getElementById('token-form');
+    tokenForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const uid = document.getElementById('uid-token').value;
+      const pushToken = document.getElementById('pushToken').value;
+
+      const res = await fetch('https://price-checker-production-03b1.up.railway.app/cadastrar-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid, pushToken }),
+      });
+
+      const data = await res.json();
+      document.getElementById('resposta-token').textContent = data.status || 'Token cadastrado!';
+    });
+
+    // Formulário de Produto
+    const produtoForm = document.getElementById('produto-form');
+    produtoForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nome = document.getElementById('nome').value;
+      const preco = parseFloat(document.getElementById('preco').value);
+      const uid = document.getElementById('uid-produto').value;
+
+      const res = await fetch('https://price-checker-production-03b1.up.railway.app/cadastrar-produto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, preco, uid }),
+      });
+
+      const data = await res.json();
+      document.getElementById('resposta-produto').textContent = data.status || 'Produto cadastrado!';
+    });
+  </script>
+</body>
+</html>
