@@ -7,11 +7,9 @@ const path = require('path');
 const app = express();
 app.use(cors());
 app.use(express.json());
-
-// 👇 servir arquivos estáticos da pasta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 👇 inicialização segura do Firebase
+// Inicialização do Firebase
 let db;
 
 try {
@@ -27,17 +25,20 @@ try {
   console.error("❌ Erro ao inicializar o Firebase:", error.message);
 }
 
-// 👇 função de simulação de preço
-async function buscarPrecoSimulado(produto) {
+// Função de simulação de preço
+async function buscarPrecoSimulado() {
   return parseFloat((Math.random() * 100).toFixed(2));
 }
 
-// 👉 ROTA PARA CADASTRAR PRODUTO
+// Rotas
+app.get('/', (req, res) => {
+  res.send('API funcionando! 🚀');
+});
+
 app.post('/cadastrar-produto', async (req, res) => {
-  if (!db) return res.status(500).json({ status: 'Firestore não está disponível' });
+  if (!db) return res.status(500).json({ status: 'Firestore não disponível' });
 
   const { nome, preco, uid } = req.body;
-
   if (!nome || !preco || !uid) {
     return res.status(400).json({ status: 'Dados incompletos' });
   }
@@ -46,12 +47,10 @@ app.post('/cadastrar-produto', async (req, res) => {
   res.send({ status: 'Produto cadastrado com sucesso!' });
 });
 
-// 👉 NOVA ROTA PARA CADASTRAR PUSH TOKEN
 app.post('/cadastrar-usuario', async (req, res) => {
-  if (!db) return res.status(500).json({ status: 'Firestore não está disponível' });
+  if (!db) return res.status(500).json({ status: 'Firestore não disponível' });
 
   const { uid, pushToken } = req.body;
-
   if (!uid || !pushToken) {
     return res.status(400).json({ status: 'UID e pushToken são obrigatórios' });
   }
@@ -60,16 +59,15 @@ app.post('/cadastrar-usuario', async (req, res) => {
   res.json({ status: 'Push token cadastrado com sucesso!' });
 });
 
-// 👉 ROTA PARA VERIFICAR PREÇOS E ENVIAR NOTIFICAÇÕES
 app.get('/verificar-precos', async (req, res) => {
-  if (!db) return res.status(500).json({ status: 'Firestore não está disponível' });
+  if (!db) return res.status(500).json({ status: 'Firestore não disponível' });
 
   const produtosSnapshot = await db.collection('produtos').get();
   const notificacoes = [];
 
   for (const doc of produtosSnapshot.docs) {
     const produto = doc.data();
-    const precoAtual = await buscarPrecoSimulado(produto);
+    const precoAtual = await buscarPrecoSimulado();
 
     if (precoAtual <= produto.preco) {
       const userDoc = await db.collection('usuarios').doc(produto.uid).get();
@@ -92,25 +90,6 @@ app.get('/verificar-precos', async (req, res) => {
   res.send({ status: 'Verificação concluída', notificacoesEnviadas: notificacoes.length });
 });
 
-// ROTA PADRÃO
-app.get('/', (req, res) => {
-  res.send('API funcionando! 🚀');
-});
-
-// ROTA EXTRA (opcional, parece repetida)
-app.post('/cadastrar-token', async (req, res) => {
-  if (!db) return res.status(500).json({ status: 'Firestore não está disponível' });
-
-  const { uid, pushToken } = req.body;
-
-  if (!uid || !pushToken) {
-    return res.status(400).json({ status: 'Dados incompletos' });
-  }
-
-  await db.collection('usuarios').doc(uid).set({ pushToken });
-  res.json({ status: 'Token cadastrado com sucesso!' });
-});
-
-// INICIA O SERVIDOR
+// Porta (usa a da Railway automaticamente)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
