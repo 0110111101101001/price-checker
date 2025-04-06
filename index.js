@@ -23,6 +23,21 @@ async function buscarPrecoSimulado(produto) {
 app.get('/verificar-precos', async (req, res) => {
   const produtosSnapshot = await db.collection('produtos').get();
   const notificacoes = [];
+app.post('/cadastrar-produto', async (req, res) => {
+  const { nome, preco, uid } = req.body;
+
+  if (!nome || !preco || !uid) {
+    return res.status(400).json({ status: 'Dados incompletos' });
+  }
+
+  await db.collection('produtos').add({
+    nome,
+    preco,
+    uid,
+  });
+
+  res.json({ status: 'Produto cadastrado com sucesso!' });
+});
 
   for (const doc of produtosSnapshot.docs) {
     const produto = doc.data();
