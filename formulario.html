@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cadastrar Produto</title>
+</head>
+<body>
+  <h2>Cadastro de Produto</h2>
+  <form id="produto-form">
+    <label>Nome do Produto:</label><br />
+    <input type="text" id="nome" required /><br /><br />
+
+    <label>Preço desejado (R$):</label><br />
+    <input type="number" id="preco" required step="0.01" /><br /><br />
+
+    <label>Push Token do usuário:</label><br />
+    <input type="text" id="pushToken" required /><br /><br />
+
+    <button type="submit">Cadastrar</button>
+  </form>
+
+  <p id="resposta"></p>
+
+  <script>
+    const form = document.getElementById('produto-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const nome = document.getElementById('nome').value;
+      const preco = parseFloat(document.getElementById('preco').value);
+      const pushToken = document.getElementById('pushToken').value;
+
+      const produto = {
+        nome,
+        preco,
+        uid: pushToken,
+      };
+
+      const res = await fetch('https://price-checker-production-03b1.up.railway.app/cadastrar-produto', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(produto),
+      });
+
+      const data = await res.json();
+      document.getElementById('resposta').textContent = data.status || 'Produto cadastrado!';
+    });
+  </script>
+</body>
+</html>
