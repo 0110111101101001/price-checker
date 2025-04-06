@@ -20,12 +20,7 @@ async function buscarPrecoSimulado(produto) {
   return parseFloat((Math.random() * 100).toFixed(2));
 }
 
-// ROTA PRINCIPAL PARA TESTE
-app.get('/', (req, res) => {
-  res.send('API funcionando! 🚀');
-});
-
-// ✅ ROTA PARA CADASTRAR PRODUTO
+// 👉 ROTA PARA CADASTRAR PRODUTO
 app.post('/cadastrar-produto', async (req, res) => {
   const { nome, preco, uid } = req.body;
 
@@ -33,16 +28,23 @@ app.post('/cadastrar-produto', async (req, res) => {
     return res.status(400).json({ status: 'Dados incompletos' });
   }
 
-  await db.collection('produtos').add({
-    nome,
-    preco,
-    uid,
-  });
-
-  res.json({ status: 'Produto cadastrado com sucesso!' });
+  await db.collection('produtos').add({ nome, preco, uid });
+  res.send({ status: 'Produto cadastrado com sucesso!' });
 });
 
-// ✅ ROTA PARA VERIFICAR PREÇOS
+// 👉 NOVA ROTA PARA CADASTRAR PUSH TOKEN
+app.post('/cadastrar-usuario', async (req, res) => {
+  const { uid, pushToken } = req.body;
+
+  if (!uid || !pushToken) {
+    return res.status(400).json({ status: 'UID e pushToken são obrigatórios' });
+  }
+
+  await db.collection('usuarios').doc(uid).set({ pushToken });
+  res.json({ status: 'Push token cadastrado com sucesso!' });
+});
+
+// 👉 ROTA PARA VERIFICAR PREÇOS E ENVIAR NOTIFICAÇÕES
 app.get('/verificar-precos', async (req, res) => {
   const produtosSnapshot = await db.collection('produtos').get();
   const notificacoes = [];
@@ -72,5 +74,10 @@ app.get('/verificar-precos', async (req, res) => {
   res.send({ status: 'Verificação concluída', notificacoesEnviadas: notificacoes.length });
 });
 
-// 🚀 INICIA SERVIDOR
+// ROTA PADRÃO
+app.get('/', (req, res) => {
+  res.send('API funcionando! 🚀');
+});
+
+// INICIA O SERVIDOR
 app.listen(3000, () => console.log('Servidor rodando na porta 3000'));
