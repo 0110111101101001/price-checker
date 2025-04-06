@@ -20,9 +20,12 @@ async function buscarPrecoSimulado(produto) {
   return parseFloat((Math.random() * 100).toFixed(2));
 }
 
-app.get('/verificar-precos', async (req, res) => {
-  const produtosSnapshot = await db.collection('produtos').get();
-  const notificacoes = [];
+// ROTA PRINCIPAL PARA TESTE
+app.get('/', (req, res) => {
+  res.send('API funcionando! 🚀');
+});
+
+// ✅ ROTA PARA CADASTRAR PRODUTO
 app.post('/cadastrar-produto', async (req, res) => {
   const { nome, preco, uid } = req.body;
 
@@ -38,6 +41,11 @@ app.post('/cadastrar-produto', async (req, res) => {
 
   res.json({ status: 'Produto cadastrado com sucesso!' });
 });
+
+// ✅ ROTA PARA VERIFICAR PREÇOS
+app.get('/verificar-precos', async (req, res) => {
+  const produtosSnapshot = await db.collection('produtos').get();
+  const notificacoes = [];
 
   for (const doc of produtosSnapshot.docs) {
     const produto = doc.data();
@@ -63,19 +71,6 @@ app.post('/cadastrar-produto', async (req, res) => {
 
   res.send({ status: 'Verificação concluída', notificacoesEnviadas: notificacoes.length });
 });
-app.get('/', (req, res) => {
-  res.send('API funcionando! 🚀');
-});
-app.post('/cadastrar-produto', async (req, res) => {
-  const { nome, preco, uid } = req.body;
 
-  await db.collection('produtos').add({
-    nome,
-    preco,
-    uid,
-  });
-
-  res.send({ status: 'Produto cadastrado com sucesso!' });
-});
-
+// 🚀 INICIA SERVIDOR
 app.listen(3000, () => console.log('Servidor rodando na porta 3000'));
