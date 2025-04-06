@@ -1,8 +1,10 @@
+require('dotenv').config(); // 👈 permite usar .env localmente
+
 const express = require('express');
 const cors = require('cors');
 const admin = require('firebase-admin');
 const axios = require('axios');
-const path = require('path'); // 👈 importação do 'path' (estava faltando!)
+const path = require('path');
 
 const app = express();
 app.use(cors());
@@ -11,21 +13,31 @@ app.use(express.json());
 // 👇 servir arquivos estáticos da pasta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
-const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+// 👇 inicialização segura do Firebase
+let db;
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+try {
+  const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
 
-const db = admin.firestore();
-const expoPushEndpoint = 'https://exp.host/--/api/v2/push/send';
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
 
+  db = admin.firestore();
+  console.log("🔥 Firebase inicializado com sucesso!");
+} catch (error) {
+  console.error("❌ Erro ao inicializar o Firebase:", error.message);
+}
+
+// 👇 função de simulação de preço
 async function buscarPrecoSimulado(produto) {
   return parseFloat((Math.random() * 100).toFixed(2));
 }
 
 // 👉 ROTA PARA CADASTRAR PRODUTO
 app.post('/cadastrar-produto', async (req, res) => {
+  if (!db) return res.status(500).json({ status: 'Firestore não está disponível' });
+
   const { nome, preco, uid } = req.body;
 
   if (!nome || !preco || !uid) {
@@ -38,6 +50,8 @@ app.post('/cadastrar-produto', async (req, res) => {
 
 // 👉 NOVA ROTA PARA CADASTRAR PUSH TOKEN
 app.post('/cadastrar-usuario', async (req, res) => {
+  if (!db) return res.status(500).json({ status: 'Firestore não está disponível' });
+
   const { uid, pushToken } = req.body;
 
   if (!uid || !pushToken) {
@@ -50,6 +64,8 @@ app.post('/cadastrar-usuario', async (req, res) => {
 
 // 👉 ROTA PARA VERIFICAR PREÇOS E ENVIAR NOTIFICAÇÕES
 app.get('/verificar-precos', async (req, res) => {
+  if (!db) return res.status(500).json({ status: 'Firestore não está disponível' });
+
   const produtosSnapshot = await db.collection('produtos').get();
   const notificacoes = [];
 
@@ -72,7 +88,7 @@ app.get('/verificar-precos', async (req, res) => {
   }
 
   for (const n of notificacoes) {
-    await axios.post(expoPushEndpoint, n);
+    await axios.post('https://exp.host/--/api/v2/push/send', n);
   }
 
   res.send({ status: 'Verificação concluída', notificacoesEnviadas: notificacoes.length });
@@ -85,6 +101,8 @@ app.get('/', (req, res) => {
 
 // ROTA EXTRA (opcional, parece repetida)
 app.post('/cadastrar-token', async (req, res) => {
+  if (!db) return res.status(500).json({ status: 'Firestore não está disponível' });
+
   const { uid, pushToken } = req.body;
 
   if (!uid || !pushToken) {
@@ -97,5 +115,4 @@ app.post('/cadastrar-token', async (req, res) => {
 
 // INICIA O SERVIDOR
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
-
+app.listen(PORT, () => console.log(`🚀 Servidor rodando na porta ${PORT}`));
