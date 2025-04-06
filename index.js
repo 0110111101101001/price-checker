@@ -11,7 +11,7 @@ app.use(express.json());
 // 👇 servir arquivos estáticos da pasta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
-const serviceAccount = require('./serviceAccountKey.json'); // 👈 você tinha duplicado isso, mantive só uma vez
+const serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
