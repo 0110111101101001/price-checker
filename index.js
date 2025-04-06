@@ -48,5 +48,8 @@ app.get('/verificar-precos', async (req, res) => {
 
   res.send({ status: 'Verificação concluída', notificacoesEnviadas: notificacoes.length });
 });
+app.get('/', (req, res) => {
+  res.send('API funcionando! 🚀');
+});
 
 app.listen(3000, () => console.log('Servidor rodando na porta 3000'));
