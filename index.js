@@ -78,6 +78,17 @@ app.get('/verificar-precos', async (req, res) => {
 app.get('/', (req, res) => {
   res.send('API funcionando! 🚀');
 });
+app.post('/cadastrar-token', async (req, res) => {
+  const { uid, pushToken } = req.body;
+
+  if (!uid || !pushToken) {
+    return res.status(400).json({ status: 'Dados incompletos' });
+  }
+
+  await db.collection('usuarios').doc(uid).set({ pushToken });
+
+  res.json({ status: 'Token cadastrado com sucesso!' });
+});
 
 // INICIA O SERVIDOR
 app.listen(3000, () => console.log('Servidor rodando na porta 3000'));
