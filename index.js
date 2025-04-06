@@ -7,6 +7,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// 👇 aqui você serve a pasta 'public' como estática
+app.use(express.static(path.join(__dirname, 'public')));
+
+const serviceAccount = require('./serviceAccountKey.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 const serviceAccount = require('./serviceAccountKey.json');
 
 admin.initializeApp({
