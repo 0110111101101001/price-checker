@@ -51,5 +51,16 @@ app.get('/verificar-precos', async (req, res) => {
 app.get('/', (req, res) => {
   res.send('API funcionando! 🚀');
 });
+app.post('/cadastrar-produto', async (req, res) => {
+  const { nome, preco, uid } = req.body;
+
+  await db.collection('produtos').add({
+    nome,
+    preco,
+    uid,
+  });
+
+  res.send({ status: 'Produto cadastrado com sucesso!' });
+});
 
 app.listen(3000, () => console.log('Servidor rodando na porta 3000'));
